@@ -1,6 +1,7 @@
 package example.expense.user.app.expense;
 
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -9,8 +10,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import java.util.Calendar;
 
 import example.expense.user.app.ExpenseList;
 import example.expense.user.app.R;
@@ -27,6 +31,18 @@ public class NewExpense extends AppCompatActivity {
     EditText etPaymentAmount;
     EditText etPaymentDate;
 
+    static final int DATE_DIALOG_ID = 0;
+
+    public int year, month, day;
+    private int mYear, mMonth, mDay;
+
+    public NewExpense() {
+        final Calendar c = Calendar.getInstance();
+        mYear = c.get(Calendar.YEAR);
+        mMonth = c.get(Calendar.MONTH);
+        mDay = c.get(Calendar.DAY_OF_MONTH);
+    }
+
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,9 +56,38 @@ public class NewExpense extends AppCompatActivity {
             etPaymentAmount = (EditText) findViewById(R.id.et_PaymentAmount);
             etPaymentDate = (EditText) findViewById(R.id.et_PaymentDate);
 
+            etPaymentDate.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    showDialog(DATE_DIALOG_ID);
+                }
+            });
+
         } catch (Exception e) {
             ErrorUtils.AlertException(this, getString(R.string.error_msg_default_with_activity), e);
         }
+    }
+
+    private DatePickerDialog.OnDateSetListener mDateSetListener = new DatePickerDialog.OnDateSetListener()
+    {
+        public void onDateSet(DatePicker view, int yearSelected,
+                              int monthOfYear, int dayOfMonth) {
+            year = yearSelected;
+            month = monthOfYear + 1;
+            day = dayOfMonth;
+            Toast.makeText(getApplicationContext(), "날짜: "+year+"-"+month+"-"+day,
+                    Toast.LENGTH_SHORT).show();
+            etPaymentDate.setText(year + " - " + month + " - " + day);
+        }
+    };
+
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        switch(id) {
+            case DATE_DIALOG_ID:
+                return new DatePickerDialog(this, mDateSetListener, mYear, mMonth,
+                        mDay);
+        }
+        return null;
     }
 
     private void addToolBar() throws Exception {
